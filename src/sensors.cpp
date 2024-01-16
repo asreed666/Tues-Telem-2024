@@ -5,8 +5,10 @@
  #include "mbed.h"
  #include "sensors.h"
  #include "config.h"
+ #include "display.h"
 
  void readSensorsTask() {
+     message_t myMessage;
      DigitalOut vcc(VCC);
      DigitalOut gnd(GND);
      AnalogIn tempVolts(THERMISTOR);
@@ -24,7 +26,10 @@
                                   ((C_COEFF)*pow((float64)logrT, (float32)3)));
         float temperatureC = (float32_t)(((1.0 / stEqn) + ABSOLUTE_ZERO) + 0.05);
 
-         printf( "The temperature is: %2.2fC\n", temperatureC);
+         sprintf( myMessage.buffer, "The temperature is: %2.2fC\n", temperatureC);
+         myMessage.displayType = 1;
+//         printf("%d %s\n", myMessage.displayType, myMessage.buffer);
+         queueMessage(myMessage);
          ThisThread::sleep_for(SENSOR_RATE);
      }
  }

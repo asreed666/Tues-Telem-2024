@@ -8,14 +8,17 @@
 #include "mbed.h"
 #include "status.h"
 #include "sensors.h"
+#include "display.h"
 
 Thread statusHandle;
 Thread sensorHandle;
+Thread displayHandle;
 // main() runs in its own thread in the OS
 int main()
 {
     statusHandle.start(callback(statusTask));
     sensorHandle.start(callback(readSensorsTask));
+    displayHandle.start(callback(displayTask));
     while (true) {
         ThisThread::sleep_for(100);
     }
