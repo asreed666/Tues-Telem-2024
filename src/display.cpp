@@ -15,9 +15,9 @@ static Queue<message_t, 32> queue;
 
 void queueMessage(message_t msg){
     message_t *message = mpool.alloc();
-    strcpy ( message->buffer, msg.buffer);
-    message->displayType = msg.displayType;
     if(message) {
+        strcpy ( message->buffer, msg.buffer);
+        message->displayType = msg.displayType;
         queue.put(message);
     }
 }    
