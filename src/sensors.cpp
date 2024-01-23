@@ -27,7 +27,7 @@
         float temperatureC = (float32_t)(((1.0 / stEqn) + ABSOLUTE_ZERO) + 0.05);
 
          sprintf( myMessage.buffer, "The temperature is: %2.2fC\n", temperatureC);
-         myMessage.displayType = 1;
+         myMessage.displayType = TEMP_DISPLAY;
 //         printf("%d %s\n", myMessage.displayType, myMessage.buffer);
          queueMessage(myMessage);
          ThisThread::sleep_for(SENSOR_RATE);
