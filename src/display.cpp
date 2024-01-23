@@ -6,9 +6,9 @@
 #include "mbed.h"
 #include "display.h"
 #include "config.h"
-#include "string.h"
-char* strcpy(char*, char*);  // fool syntax checker
 
+
+//char* strcpy(char*, const char*);  // fool syntax checker
 
 static MemoryPool<message_t, 32> mpool;
 static Queue<message_t, 32> queue;
@@ -16,7 +16,7 @@ static Queue<message_t, 32> queue;
 void queueMessage(message_t msg){
     message_t *message = mpool.alloc();
     if(message) {
-        strcpy ( message->buffer, msg.buffer);
+        strcpy (message->buffer, msg.buffer);
         message->displayType = msg.displayType;
         queue.put(message);
     }
