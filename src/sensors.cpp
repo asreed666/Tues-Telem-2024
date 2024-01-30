@@ -26,7 +26,7 @@
                                   ((C_COEFF)*pow((float64)logrT, (float32)3)));
         float temperatureC = (float32_t)(((1.0 / stEqn) + ABSOLUTE_ZERO) + 0.05);
 
-         sprintf( myMessage.buffer, "The temperature is: %2.2fC\n", temperatureC);
+         sprintf( myMessage.buffer, "%2.1fC \n", temperatureC);
          myMessage.displayType = TEMP_DISPLAY;
 //         printf("%d %s\n", myMessage.displayType, myMessage.buffer);
          queueMessage(myMessage);
