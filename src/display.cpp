@@ -74,7 +74,32 @@ void displayTask() {
             message_t *message = (message_t*)evt.value.p;
             switch(message->displayType) {
                 case TEMP_DISPLAY: {
-                    printf("\033[4;26H");
+                    printf("\033[4;28H");
+                    printf("%s", message->buffer);
+                    break;
+                }
+                case TEMP_SET: {
+                    printf("\033[6;28H");
+                    printf("%s", message->buffer);
+                    break;
+                }
+                case HEATER_ON: {
+                    printf("\033[8;28H");
+                    printf("%s", message->buffer);
+                    break;
+                }
+                case LIGHT_DISPLAY: {
+                    printf("\033[4;64H");
+                    printf("%s", message->buffer);
+                    break;
+                }
+                case LIGHT_SET: {
+                    printf("\033[6;64H");
+                    printf("%s", message->buffer);
+                    break;
+                }
+                case LIGHT_ON: {
+                    printf("\033[8;64H");
                     printf("%s", message->buffer);
                     break;
                 }
