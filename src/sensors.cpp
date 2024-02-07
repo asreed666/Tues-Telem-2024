@@ -39,6 +39,7 @@
      DigitalOut vcc(VCC);
      DigitalOut gnd(GND);
      AnalogIn tempVolts(THERMISTOR);
+     AnalogIn lightVolts(PHOTODIODE);
      vcc = 1;
      gnd = 0;
      float temperatureVoltage;
@@ -58,6 +59,13 @@
          myMessage.displayType = TEMP_DISPLAY;
 //         printf("%d %s\n", myMessage.displayType, myMessage.buffer);
          queueMessage(myMessage);
+         ThisThread::sleep_for(10);
+         float lightLevel = lightVolts.read() * 100;
+         sprintf( myMessage.buffer, "%3.1f%c ", lightLevel, '%');
+         myMessage.displayType = LIGHT_DISPLAY;
+//         printf("%d %s\n", myMessage.displayType, myMessage.buffer);
+         queueMessage(myMessage);         
+
          ThisThread::sleep_for(SENSOR_RATE);
      }
  }
