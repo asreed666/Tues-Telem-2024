@@ -54,17 +54,18 @@
         float stEqn = (float32_t)((A_COEFF) + ((B_COEFF)*logrT) +
                                   ((C_COEFF)*pow((float64)logrT, (float32)3)));
         float temperatureC = (float32_t)(((1.0 / stEqn) + ABSOLUTE_ZERO) + 0.05);
-
-         sprintf( myMessage.buffer, "%2.1fC \n", temperatureC);
-         myMessage.displayType = TEMP_DISPLAY;
-//         printf("%d %s\n", myMessage.displayType, myMessage.buffer);
-         queueMessage(myMessage);
-         ThisThread::sleep_for(10);
-         float lightLevel = lightVolts.read() * 100;
-         sprintf( myMessage.buffer, "%3.1f%c ", lightLevel, '%');
-         myMessage.displayType = LIGHT_DISPLAY;
-//         printf("%d %s\n", myMessage.displayType, myMessage.buffer);
-         queueMessage(myMessage);         
+        myD.tempC = temperatureC;
+        sprintf( myMessage.buffer, "%2.1fC  ", temperatureC);
+        myMessage.displayType = TEMP_DISPLAY;
+//        printf("%d %s\n", myMessage.displayType, myMessage.buffer);
+        queueMessage(myMessage);
+        ThisThread::sleep_for(10);
+        float lightLevel = lightVolts.read() * 100;
+        myD.lightL = lightLevel;
+        sprintf( myMessage.buffer, "%3.1f%c   ", lightLevel, '%');
+        myMessage.displayType = LIGHT_DISPLAY;
+//        printf("%d %s\n", myMessage.displayType, myMessage.buffer);
+        queueMessage(myMessage);         
 
          ThisThread::sleep_for(SENSOR_RATE);
      }
