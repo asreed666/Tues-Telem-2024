@@ -31,5 +31,21 @@
 #define DEAD_BAND_L (float)(10.0f)
 #define DEAD_BAND_T (float)(2.0f)
 
+/* MQTT configuration data
+ *
+ * Set your unique THING_NAME mine is asrThingy
+*/
+
+#define BROKER          "192.168.1.176"
+#define PORT            1883
+
+#define THING_NAME      "asrThingy"
+
+//#define TEMPERATURE_TOPIC   "/temperatureC"
+//#define LIGHT_LEVEL_TOPIC   "/lightlevel"
+#define ANNOUNCE_TOPIC      "/announce"
+#define LIGHT_SET_TOPIC "asrThingy/lightSet"
+#define TEMP_SET_TOPIC "asrThingy/tempSet"
+
 
 #endif

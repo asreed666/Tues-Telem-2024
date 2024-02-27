@@ -10,11 +10,13 @@
 #include "sensors.h"
 #include "display.h"
 #include "actuators.h"
+#include "wifi.h"
 
 Thread statusHandle;
 Thread sensorHandle;
 Thread displayHandle;
 Thread actuatorHandle;
+Thread wifiHandle;
 // main() runs in its own thread in the OS
 int main()
 {
@@ -22,6 +24,7 @@ int main()
     sensorHandle.start(callback(readSensorsTask));
     displayHandle.start(callback(displayTask));
     actuatorHandle.start(callback(doActuations));
+    wifiHandle.start(callback(wifiTask));
     while (true) {
         ThisThread::sleep_for(100);
     }
