@@ -7,5 +7,9 @@ typedef struct {
 } message_t;
 
 void displayTask();
+void displayPanel();
+int stringcpy(char*, char*);
+int nstringcpy(char*, char*, int);
+int stringlen(char*);
 void queueMessage(message_t);
 #endif

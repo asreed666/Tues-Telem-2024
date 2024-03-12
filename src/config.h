@@ -28,6 +28,7 @@
 #define CONNECTED (uint8_t) (10)
 #define MESSAGES_SENT (uint8_t)(11)
 #define MESSAGES_RCVD (uint8_t)(12)
+#define STATUS_DISPLAY (uint8_t)(13)
 #define DEAD_BAND_L (float)(10.0f)
 #define DEAD_BAND_T (float)(2.0f)
 

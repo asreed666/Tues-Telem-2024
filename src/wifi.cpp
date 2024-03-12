@@ -55,12 +55,18 @@ const char topicMap[NUM_TOPICS][TOPIC_LEN] = {
       "orangeled", "heaterState", "heaterSwitch", "humidity"};
 
 extern bool displayUp;
+char buffer[80];
 uint32_t rxCount = 0;
 DigitalOut rxLed(RXLED);
 
 void sendPub(int pTopic, float pValue) {
+  char buffer[80];
+  message_t myMessage;
+
   if (qSize == qLen) {
-    printf("Publish queue is full!\n");
+    sprintf(myMessage.buffer, "Publish queue is full!                                  ");
+    myMessage.displayType = STATUS_DISPLAY;
+    queueMessage(myMessage);
   } else {
     myQueue[stQueue].topic = pTopic;
     myQueue[(stQueue++) % qLen].value = pValue;
@@ -85,17 +91,21 @@ public:
     {
     }
 
-    ~joinWifi()
+    ~joinWifi() // disconnect from wifi
     {
         if (_net) {
             _net->disconnect();
         }
     }
 
-    void run()
+    void run() // Main wifi/mqtt thread - capture subscribed data coming in
+    //            and publishes data back to the broker
     {
+        message_t myMessage;
         if (!_net) {
-            printf("Error! No network interface found.\r\n");
+            sprintf(myMessage.buffer,"Error! No network interface found.        ");
+            myMessage.displayType = STATUS_DISPLAY;
+            queueMessage(myMessage);
             return;
         }
 
@@ -111,24 +121,34 @@ public:
 
         /* connect will perform the action appropriate to the interface type to connect to the network */
 
-        printf("\033[3;1HConnecting to the network...\r\n");
-
+        sprintf(myMessage.buffer,"Connecting to the network...                         ");
+        myMessage.displayType = STATUS_DISPLAY;
+        queueMessage(myMessage);
         nsapi_size_or_error_t result = _net->connect();
         if (result != 0) {
-            printf("Error! _net->connect() returned: %d\r\n", result);
+            sprintf(myMessage.buffer, "Error! _net->connect() returned: %d                ", result);
+            myMessage.displayType = STATUS_DISPLAY;
+            queueMessage(myMessage);
             return;
         }
-        printf("\033[3;1HConnected to the network....\r\n");
+        sprintf(myMessage.buffer, "Connected to the network....                           ");
+        myMessage.displayType = STATUS_DISPLAY;
+        queueMessage(myMessage);
 
         print_network_info();
 
         /* opening the socket only allocates resources */
         result = _socket.open(_net);
         if (result != 0) {
-            printf("Error! _socket.open() returned: %d\r\n", result);
+            sprintf(myMessage.buffer, "Error! _socket.open() returned: %d        ", result);
+            myMessage.displayType = STATUS_DISPLAY;
+            queueMessage(myMessage);
             return;
         }
-        printf("Starting MQTT Reporting to %S\n", (wchar_t *)BROKER);
+        sprintf(myMessage.buffer, "Starting MQTT Reporting to %S           ", (wchar_t *)BROKER);
+        myMessage.displayType = STATUS_DISPLAY;
+        queueMessage(myMessage);
+
         char buffer[80];
         char topicBuffer[80];
         uint32_t rc;
@@ -144,55 +164,74 @@ public:
         TCPSocket socket;
         MQTTClient client(&socket);
         socket.open(_net);
+        displayPanel();
+        ThisThread::sleep_for(10);
         rc = socket.connect(host, port);
         if (rc == 0) {
-            printf("Succesful connection of socket to Host %s port %d\n", host, port);
+            sprintf(myMessage.buffer, "Succesful connection of socket to Host %s port %d ", host, port);
+            myMessage.displayType = STATUS_DISPLAY;
+            queueMessage(myMessage);
+
         } else {
-            printf("Socket connection failed");
+            sprintf(myMessage.buffer, "Socket connection failed                          ");
+            myMessage.displayType = STATUS_DISPLAY;
+            queueMessage(myMessage);
             while (socket.connect(host, port)) {
-                printf(".");
+                printf(myMessage.buffer, ". ");
+                myMessage.displayType = STATUS_DISPLAY;
+                queueMessage(myMessage);
             }
         }
         rc = client.connect(data);
         if (rc == 0) {
-            printf("Succesful connection of %s to Broker\n", data.clientID.cstring);
+            sprintf(myMessage.buffer, "Succesful connection of %s to Broker           ", data.clientID.cstring);
         } else {
-            printf("Client connection failed");
+            sprintf(myMessage.buffer, "Client connection failed                       ");
         }
+        myMessage.displayType = STATUS_DISPLAY;
+        queueMessage(myMessage);
+
         MQTT::Message message{};
         sprintf(buffer, "Hello World! from %s\r\n", THING_NAME);
         message.qos = MQTT::QOS0;
         message.retained = false;
         message.dup = false;
         message.payload = (void *)buffer;
-        message.payloadlen = strlen(buffer) + 1;
+        message.payloadlen = stringlen(buffer) + 1;
 
         rc = client.publish(ANNOUNCE_TOPIC, message);
         if (rc == 0) {
-            printf("publish announce worked\n");
+            sprintf(myMessage.buffer, "publish announce worked              ");
             }
              
         else {
-            printf("publish announce failed %d\n", rc);
+            sprintf(myMessage.buffer, "publish announce failed %d\n", rc);
         }
+        myMessage.displayType = STATUS_DISPLAY;
+        queueMessage(myMessage);
 
         rc = client.subscribe(LIGHT_SET_TOPIC, MQTT::QOS0,
                               messageLightSetArrived);
 #ifdef DEBUG
         if (rc != 0)
-            sprintf(buffer, "Subscription Error %d", rc);
+            sprintf(myMessage.buffer, "Subscription Error %d", rc);
         else
-            sprintf(buffer, "Subscribed to %s", LIGHT_SET_TOPIC);
-        printf("%s", buffer);
+            sprintf(myMessage.buffer, "Subscribed to %s               ", LIGHT_SET_TOPIC);
+        myMessage.displayType = STATUS_DISPLAY;
+        queueMessage(myMessage);
+
+        //printf("%s", buffer);
 #endif
         rc = client.subscribe(TEMP_SET_TOPIC, MQTT::QOS0,
                               messageTempSetArrived);
 #ifdef DEBUG
         if (rc != 0)
-            sprintf(buffer, "Subscription Error %d", rc);
+            sprintf(myMessage.buffer, "Subscription Error %d       ", rc);
         else
-            sprintf(buffer, "Subscribed to %s", TEMP_SET_TOPIC);
-        printf("%s", buffer);
+            sprintf(myMessage.buffer, "Subscribed to %s                                  ", TEMP_SET_TOPIC);
+        myMessage.displayType = STATUS_DISPLAY;
+        queueMessage(myMessage);
+        //printf("%s", buffer);
 #endif
         rxLed = 1;
 
@@ -209,7 +248,7 @@ public:
                 }
 
                 message.payload = (void *)buffer;
-                message.payloadlen = strlen(&buffer[0]) + 1;
+                message.payloadlen = stringlen(&buffer[0]) + 1;
 
                 rc=client.publish(&topicBuffer[0], message);
 
@@ -223,7 +262,7 @@ private:
         uint32_t len = md.message.payloadlen;
         char rxed[len + 1];
 
-        strncpy(&rxed[0], (char *)(&md.message.payload)[0], len);
+        nstringcpy(&rxed[0], (char *)(&md.message.payload)[0], len);
         myD.lightSet = atoi(rxed);
         rxCount++;
         rxLed = !rxLed;
@@ -234,7 +273,7 @@ private:
         uint32_t len = md.message.payloadlen;
         char rxed[len + 1];
 
-        strncpy(&rxed[0], (char *)(&md.message.payload)[0], len);
+        nstringcpy(&rxed[0], (char *)(&md.message.payload)[0], len);
         myD.tempSet = atof(rxed);
         rxCount++;
         rxLed = !rxLed;
@@ -242,10 +281,12 @@ private:
 private:
     void print_network_info()
     {
-        /* print the network info */
+        message_t myMessage;/* print the network info */
         SocketAddress a;
         _net->get_ip_address(&a);
-        printf("\033[5;1HIP address: %s", a.get_ip_address() ? a.get_ip_address() : "None");
+        sprintf(buffer, "IP address: %s              ", a.get_ip_address() ? a.get_ip_address() : "None");
+        myMessage.displayType = STATUS_DISPLAY;
+        queueMessage(myMessage);
     }
 
 private:
@@ -259,7 +300,10 @@ private:
 };
 
 void wifiTask() {
-    printf("\033[2;1HStarting Wifi Connection...\n");
+    message_t myMessage;
+    sprintf(myMessage.buffer, "Starting Wifi Connection...                        ");
+    myMessage.displayType = STATUS_DISPLAY;
+    queueMessage(myMessage);
 
 #ifdef MBED_CONF_MBED_TRACE_ENABLE
     mbed_trace_init();
