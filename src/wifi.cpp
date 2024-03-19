@@ -58,6 +58,7 @@ extern bool displayUp;
 char buffer[80];
 uint32_t rxCount = 0;
 DigitalOut rxLed(RXLED);
+bool settingsChanged = true;
 
 void sendPub(int pTopic, float pValue) {
   char buffer[80];
@@ -238,6 +239,16 @@ public:
         while (true) {
             ThisThread::sleep_for(10);
             client.yield(10);
+            if (settingsChanged) {
+                settingsChanged = false;
+                sprintf(myMessage.buffer, "%2.1fC", myD.tempSet);
+                myMessage.displayType = TEMP_SET;
+                queueMessage(myMessage);
+                sprintf(myMessage.buffer, "%2.1f%c", myD.lightSet, '%');
+                myMessage.displayType = LIGHT_SET;
+                queueMessage(myMessage);
+
+            }
             if (qSize > 0) {
                 sprintf(buffer, "%f", myQueue[endQueue].value);
                 sprintf(topicBuffer, "%s/%s", THING_NAME,
@@ -265,6 +276,7 @@ private:
         nstringcpy(&rxed[0], (char *)(&md.message.payload)[0], len);
         myD.lightSet = atoi(rxed);
         rxCount++;
+        settingsChanged = true;
         rxLed = !rxLed;
     }
 private:
@@ -275,6 +287,7 @@ private:
 
         nstringcpy(&rxed[0], (char *)(&md.message.payload)[0], len);
         myD.tempSet = atof(rxed);
+        settingsChanged = true;
         rxCount++;
         rxLed = !rxLed;
     }
