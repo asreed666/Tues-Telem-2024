@@ -5,6 +5,7 @@
 #include "actuators.h"
 #include "config.h"
 #include "display.h"
+#include "wifi.h"
 
 
 
@@ -21,6 +22,7 @@ void doActuations() {
     DigitalOut lightState(LIGHT_LED);
     DigitalOut heaterState(HEATER_LED);
     message_t myMessage;
+    int pubPeriodCounter = 0;
 
     while(true) {
         if (myD.lightL < (myD.lightSet - DEAD_BAND_L)) {
@@ -48,6 +50,11 @@ void doActuations() {
         sprintf(myMessage.buffer, " %s ", myD.heaterState?" ON":"OFF");
         myMessage.displayType = HEATER_ON;
         queueMessage(myMessage);
+        if (pubPeriodCounter++ >= 100 /* every 10 secs */){
+            pubPeriodCounter = 0;
+            sendPub(LIGHT_STATE_TOPIC, (float)myD.lightState);
+            sendPub(HEATER_STATE_TOPIC, (float)myD.heaterState);
+        }
         ThisThread::sleep_for(100);
 //        printf("\033[20;1H%f %f %f %d \n%f %d",myD.tempC, myD.tempSet, myD.heaterState,
 //                                        myD.lightL, myD.lightSet, myD.lightState);
